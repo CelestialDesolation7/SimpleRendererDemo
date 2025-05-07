@@ -82,7 +82,7 @@ namespace SphereDispDemo
             // scale 是一个缩放因子，用于将三维坐标转换为二维屏幕坐标
             // 右侧算式的意思是：取窗口的宽度和高度中的最小值，乘以 0.4f
 
-            Pen pen = new Pen(Color.Green, 1);
+            Pen pen = new Pen(Color.Yellow, 1);
 
 
             // 绘制纬线
@@ -104,10 +104,27 @@ namespace SphereDispDemo
                     // 新建一个 Vector3 结构体实例，表示球面上的点
                     // 这里的链式调用的意义是：先将球面上的点绕X轴旋转 pitch 弧度，再绕Y轴旋转 yaw 弧度
                     var v = new Vector3(x, y, z).RotateX(pitch).RotateY(yaw);
-                    line.Add(Project(v, scale, this.ClientSize));
+                    //line.Add(Project(v, scale, this.ClientSize));
+
+                    if (v.Z <= 0)
+                    {
+                        line.Add(Project(v, scale, this.ClientSize));
+                    }
+                    else
+                    {
+                        // 若遇到背面点，断线
+                        if (line.Count >= 2)
+                            g.DrawLines(pen, line.ToArray());
+
+                        line.Clear(); // 清空当前折线段
+                    }
                 }
+
+                if (line.Count >= 2)
+                    g.DrawLines(pen, line.ToArray());
+
                 // 将所有采样的点两两连接起来，因为样本很多，看起来就是弧线
-                g.DrawLines(pen, line.ToArray());
+                // g.DrawLines(pen, line.ToArray());
             }
 
 
@@ -123,9 +140,25 @@ namespace SphereDispDemo
                     double y = Math.Sin(latRad);
                     double z = Math.Cos(latRad) * Math.Sin(lonRad);
                     var v = new Vector3(x, y, z).RotateX(pitch).RotateY(yaw);
-                    line.Add(Project(v, scale, this.ClientSize));
+                    //line.Add(Project(v, scale, this.ClientSize));
+
+                    // 判断是否在前面（即朝向观察者）
+                    if (v.Z <= 0)
+                    {
+                        line.Add(Project(v, scale, this.ClientSize));
+                    }
+                    else
+                    {
+                        // 若遇到背面点，断线
+                        if (line.Count >= 2)
+                            g.DrawLines(pen, line.ToArray());
+
+                        line.Clear(); // 清空当前折线段
+                    }
                 }
-                g.DrawLines(pen, line.ToArray());
+
+                if (line.Count >= 2)
+                    g.DrawLines(pen, line.ToArray());
             }
         }
 
